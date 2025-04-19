@@ -1,0 +1,8 @@
+name = "opendex-password-reset"
+main = "src/index.ts"
+compatibility_date = "2023-10-16"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "opendex_users"
+database_id = "your-database-id" # Reemplazar con tu ID real después de crear la base de datos
