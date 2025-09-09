@@ -3,13 +3,7 @@ import { OpendexLogo } from "@/components/opendex-logo"
 
 export default function Home() {
   return (
-    <main
-      className="min-h-screen p-8 bg-cover bg-center bg-no-repeat overflow-auto"
-      style={{
-        backgroundImage: 'url("https://public.blob.opendex.dev/FONDOS%20DE%20INICIO%20DE%20SESION/3.png")',
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <main className="min-h-screen p-8 overflow-auto">
       <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden mb-8">
         <div className="bg-[#003366] p-6 flex justify-center">
           <OpendexLogo className="h-12 w-auto" />

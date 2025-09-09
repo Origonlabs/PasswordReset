@@ -1,47 +1,33 @@
 import { NextResponse } from "next/server"
-import { supabase } from "@/lib/supabase"
+export const runtime = 'edge'
+import { sql } from "@/lib/db"
 
 export async function GET() {
   try {
-    // Intentar una consulta simple para verificar la conexión y la existencia de las tablas
-    const { data: usersData, error: usersError } = await supabase.from("users").select("id").limit(1)
-
-    // Si hay un error específico sobre tabla inexistente, la base de datos está conectada pero no configurada
-    if (usersError && usersError.message.includes("does not exist")) {
-      console.log("Database connected but tables not configured")
-      return NextResponse.json({
-        connected: true,
-        configured: false,
-        error: "Database tables not configured",
-      })
+    // Intento de consulta simple a 'users'
+    try {
+      await sql`SELECT id FROM users LIMIT 1`
+    } catch (e: any) {
+      const msg = String(e?.message || e)
+      if (/does not exist|not exist|relation .* does not exist/i.test(msg)) {
+        return NextResponse.json({ connected: true, configured: false, error: 'Users table not found' }, { status: 200 })
+      }
+      return NextResponse.json({ connected: false, error: msg }, { status: 200 })
     }
 
-    // Si hay otro tipo de error, puede ser un problema de conexión
-    if (usersError) {
-      console.error("Error checking DB connection:", usersError)
-      return NextResponse.json({ connected: false, error: usersError.message })
+    // Verificar también 'reset_attempts'
+    try {
+      await sql`SELECT id FROM reset_attempts LIMIT 1`
+    } catch (e: any) {
+      const msg = String(e?.message || e)
+      if (/does not exist|not exist|relation .* does not exist/i.test(msg)) {
+        return NextResponse.json({ connected: true, configured: false, error: 'reset_attempts table not found' }, { status: 200 })
+      }
+      return NextResponse.json({ connected: false, error: msg }, { status: 200 })
     }
 
-    // Verificar también la tabla de intentos de restablecimiento
-    const { data: attemptsData, error: attemptsError } = await supabase.from("reset_attempts").select("id").limit(1)
-
-    if (attemptsError && attemptsError.message.includes("does not exist")) {
-      console.log("Users table exists but reset_attempts table does not")
-      return NextResponse.json({
-        connected: true,
-        configured: false,
-        error: "Reset attempts table not configured",
-      })
-    }
-
-    // Si llegamos aquí, la conexión está bien y ambas tablas existen
-    return NextResponse.json({
-      connected: true,
-      configured: true,
-      message: "Database connection successful and tables configured correctly",
-    })
-  } catch (error) {
-    console.error("Unexpected error checking DB connection:", error)
-    return NextResponse.json({ connected: false, error: "Unexpected error checking DB connection" })
+    return NextResponse.json({ connected: true, configured: true, message: "OK" }, { status: 200 })
+  } catch (error: any) {
+    return NextResponse.json({ connected: false, error: String(error?.message || error) }, { status: 200 })
   }
 }

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
-import { Circle } from "lucide-react"
+import { Circle } from "@/components/icons"
 
 import { cn } from "@/lib/utils"
 
@@ -12,7 +12,8 @@ const RadioGroup = React.forwardRef<
 >(({ className, ...props }, ref) => {
   return (
     <RadioGroupPrimitive.Root
-      className={cn("grid gap-2", className)}
+      // No forzamos display grid; mantenemos solo el gap para que el caller elija flex/grid
+      className={cn("gap-2", className)}
       {...props}
       ref={ref}
     />

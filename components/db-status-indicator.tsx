@@ -1,6 +1,6 @@
 "use client"
 
-import { Database, AlertTriangle, Code, Download, ExternalLink } from "lucide-react"
+import { Database, AlertTriangle, Code, Download, ExternalLink } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 
@@ -38,24 +38,24 @@ export function DbStatusIndicator({ status, onSetupDb }: DbStatusIndicatorProps)
   }
 
   const sqlScript = `
--- Extensión para generar UUIDs (ejecutar como administrador)
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Init schema for Opendex Password Reset (Neon)
+-- Requires pgcrypto for gen_random_uuid
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- Crear tabla de usuarios
 CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username TEXT NOT NULL UNIQUE,
   role TEXT NOT NULL,
   fullname TEXT NOT NULL,
   department TEXT,
   position TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_username_role ON users(username, role);
 
--- Insertar usuarios de ejemplo
+-- Optional seed data
 INSERT INTO users (username, role, fullname, department, position)
 VALUES 
   ('jperez', 'developer', 'Juan Pérez', 'ingenieria', 'Desarrollador Senior'),
@@ -66,9 +66,8 @@ VALUES
   ('test', 'executive', 'Usuario de Prueba', 'estrategia', 'Analista de Negocio')
 ON CONFLICT (username) DO NOTHING;
 
--- Crear tabla de intentos de restablecimiento
 CREATE TABLE IF NOT EXISTS reset_attempts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username TEXT NOT NULL,
   role TEXT NOT NULL,
   full_name TEXT,
@@ -78,7 +77,7 @@ CREATE TABLE IF NOT EXISTS reset_attempts (
   ip_address TEXT,
   user_agent TEXT,
   success BOOLEAN DEFAULT FALSE,
-  attempt_date TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  attempt_date TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_reset_attempts_username ON reset_attempts(username);
@@ -176,14 +175,13 @@ CREATE INDEX IF NOT EXISTS idx_reset_attempts_date ON reset_attempts(attempt_dat
                 <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
                   <h4 className="text-xs font-semibold text-blue-800 flex items-center">
                     <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                    Instrucciones para configurar la base de datos:
+                    Instrucciones para configurar la base de datos (Neon):
                   </h4>
                   <ol className="list-decimal pl-4 space-y-1 mt-1 text-xs text-blue-800">
-                    <li>Acceda al panel de administración de Supabase</li>
-                    <li>Vaya a la sección "SQL Editor" (Editor SQL)</li>
-                    <li>Cree un nuevo query haciendo clic en "New Query" (Nueva Consulta)</li>
-                    <li>Pegue el código SQL anterior</li>
-                    <li>Ejecute el script haciendo clic en "Run" (Ejecutar)</li>
+                    <li>Acceda al panel de Neon y abra el SQL Editor</li>
+                    <li>Cree un nuevo query</li>
+                    <li>Pegue el código SQL anterior o use el archivo `sql/init_neon.sql`</li>
+                    <li>Ejecute el script</li>
                     <li>Vuelva a esta página y recargue para verificar la conexión</li>
                   </ol>
                 </div>
